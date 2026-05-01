@@ -23,7 +23,7 @@ Backend API for an event booking platform, currently under active development. T
 ---
 
 ## 📁 Project Structure
-
+```bash
 src/
 ├── controllers/ # request handling logic
 ├── routes/ # API routes
@@ -32,7 +32,7 @@ src/
 ├── utils/ # helper functions (email, OTP, etc.)
 ├── db/ # DB setup
 └── app.js # express app setup
-
+```
 ---
 
 ## ⚙️ Getting Started
@@ -50,7 +50,7 @@ npm install
 ### 3. Setup environment variables
 
 Create a `.env` file inside the `backend/` folder:
-
+```bash
 PORT=8000
 MONGO_URI=your_mongodb_connection
 DB_NAME=your_db_name
@@ -61,7 +61,7 @@ REFRESH_TOKEN_EXPIRY=your_refresh_token_expiry
 JWT_SECRET=your_secret
 EMAIL_USER=your_email
 EMAIL_PASS=your_password
-
+```
 ---
 
 ### 4. Run the server
