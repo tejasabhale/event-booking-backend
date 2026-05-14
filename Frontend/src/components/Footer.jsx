@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FaLinkedin, FaGithub, FaXTwitter } from "react-icons/fa6";
 
 function Footer() {
   return (
@@ -55,16 +56,44 @@ function Footer() {
             </div>
           </div>
 
-          {/* Contact */}
+          {/* Social Profiles */}
           <div className="text-center sm:text-left">
             <h3 className="text-lg font-semibold mb-4">
-              Contact
+              Connect With Me
             </h3>
 
             <div className="space-y-3 text-slate-400 text-sm">
-              <p>support@eventzone.com</p>
-              <p>+91 9999999999</p>
-              <p>Pune, India</p>
+
+              <a
+                href="https://www.linkedin.com/in/tejas-abhale-50743128a/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition flex items-center justify-center sm:justify-start gap-2"
+              >
+                <FaLinkedin size={18} />
+                LinkedIn
+              </a>
+
+              <a
+                href="https://github.com/tejasabhale"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition flex items-center justify-center sm:justify-start gap-2"
+              >
+                <FaGithub size={18} />
+                GitHub
+              </a>
+
+              <a
+                href="https://x.com/Tejas55451"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition flex items-center justify-center sm:justify-start gap-2"
+              >
+                <FaXTwitter size={18} />
+                Twitter
+              </a>
+
             </div>
           </div>
 
