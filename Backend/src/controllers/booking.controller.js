@@ -50,4 +50,9 @@ const bookEvent = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, booking, "Event booked successfully!"));
 });
 
-export { bookEvent };
+const getMyBookings = asyncHandler(async (req, res) => {
+  const bookings = await Booking.find({ user: req.user._id }).populate("event");
+  return res.status(200).json(new ApiResponse(200, bookings))
+});
+
+export { bookEvent, getMyBookings };

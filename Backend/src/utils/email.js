@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer'
 import { Otp } from '../models/otp.model.js'
+import dotenv from "dotenv"
+dotenv.config(); 
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -8,6 +10,8 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     }
 })
+
+
 
 const getOtpTemplate = (otp, msg) => `
 <!DOCTYPE html>
@@ -61,8 +65,8 @@ export const sendOtpEmail = async (email, otp, type) => {
     try {
         const title = type === 'accountVerification' ? 'Verify your EventZone Account' : "Event Booking Verification"
         const msg = type === 'accountVerification' 
-        ? 'Please use the following OTP o verify your EventZone account'
-        : 'Please use the following OTP to verify and confim your even booking'
+        ? 'Please use the following OTP to verify your EventZone account'
+        : 'Please use the following OTP to verify and confirm your event booking'
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,

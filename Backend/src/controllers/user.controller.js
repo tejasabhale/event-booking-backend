@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { sendOtpEmail } from "../utils/email.js";
-import { Otp } from "../models/OTP.model.js";
+import { Otp } from "../models/otp.model.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 
@@ -29,8 +29,9 @@ const registerUser = asyncHandler(async (req, res) => {
   const { username, fullName, password, email, mobileNo } = req.body;
   if (
     [username, fullName, email, password].some(
-      (field) => field?.trim() === ""
-    ) || !mobileNo
+      (field) => field?.trim() === "",
+    ) ||
+    !mobileNo
   ) {
     throw new ApiError(400, "All fields are required");
   }
@@ -60,9 +61,9 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while reistering user");
   }
 
-  const generateOtp = () =>{
+  const generateOtp = () => {
     return crypto.randomInt(100000, 1000000).toString();
-  }
+  };
   const otp = generateOtp();
   const hashedOtp = await bcrypt.hash(otp, 10);
   console.log(`Otp for ${email}: ${otp}`);
@@ -93,6 +94,10 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Username or Email is required");
   }
 
+  if (!password) {
+    throw new ApiError(400, "Password is required");
+  }
+
   const user = await User.findOne({
     $or: [{ username }, { email }],
   });
@@ -102,16 +107,47 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
+
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid user credentials");
   }
 
-  const { accessToken, refreshToken } = await generateAccesAndRefreshToken(
-    user._id,
-  );
+  if (!user.isVerified) {
+    const otp = crypto.randomInt(100000, 1000000).toString();
+
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    await Otp.deleteMany({
+      email: user.email,
+      action: "accountVerification",
+    });
+
+    await Otp.create({
+      email: user.email,
+      otp: hashedOtp,
+      action: "accountVerification",
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    });
+
+    await sendOtpEmail(user.email, otp, "accountVerification");
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          email: user.email,
+          verified: false,
+        },
+        "Unverified user! OTP sent."
+      )
+    );
+  }
+
+  const { accessToken, refreshToken } =
+    await generateAccesAndRefreshToken(user._id);
 
   const loggedInUser = await User.findById(user._id).select(
-    "-password -refreshToken",
+    "-password -refreshToken"
   );
 
   return res.status(200).json(
@@ -121,9 +157,10 @@ const loginUser = asyncHandler(async (req, res) => {
         user: loggedInUser,
         accessToken,
         refreshToken,
+        verified: true,
       },
-      "User logged in successfully",
-    ),
+      "User logged in successfully"
+    )
   );
 });
 
@@ -155,7 +192,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No OTP found for this email");
   }
 
-  if (new Date() > otp.expiresAt) {
+  if (new Date() > otpRecord.expiresAt) {
     throw new ApiError(400, "OTP has expired, please regiter again.");
   }
 
@@ -164,13 +201,13 @@ const verifyOtp = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid OTP");
   }
 
-  const user = User.findByIdAndUpdate(
+  const user = await User.findOneAndUpdate(
     { email },
     {
       $set: { isVerified: true },
     },
     {
-      new: true,
+      returnDocument: "after",
     },
   ).select("-password -refreshToken");
 

@@ -35,9 +35,9 @@ const getAllEvents = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Events not found");
   }
 
-  return res.status(200).json(
-    new ApiResponse(200, events, "Events fetched successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, events, "Events fetched successfully"));
 });
 
 const getEventById = asyncHandler(async (req, res) => {
@@ -50,9 +50,42 @@ const getEventById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Event not found");
   }
 
-  return res.status(200).json(
-    new ApiResponse(200, event, "Event fetched successfully.")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, event, "Event fetched successfully."));
 });
 
-export { createEvent, getEventById, getAllEvents };
+const getMyEvents = asyncHandler(async (req, res) => {
+  const events = await Event.find({ organizer: req.user._id }).sort({
+    createdAt: -1,
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, events, "Events fetched successfully"));
+});
+
+const deleteEvent = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const event = await Event.findById(id);
+
+  if (!event) {
+    return res.status(404).json({
+      message: "Event not found",
+    });
+  }
+
+  if (event.organizer.toString() !== req.user._id.toString()) {
+    return res.status(403).json({
+      message: "Unauthorized",
+    });
+  }
+
+  await event.deleteOne();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Event deleted successfully!"));
+});
+
+export { createEvent, getEventById, getAllEvents, getMyEvents, deleteEvent };
