@@ -5,7 +5,7 @@ import { Event } from "../models/event.model.js";
 
 const createEvent = asyncHandler(async (req, res) => {
   const { title, description, date, venue, price, totalSeats } = req.body;
-  if ([title, description, date, venue].some((field) => field?.trim() === "")) {
+  if (!title?.trim() || !description?.trim() || !venue?.trim() || !date) {
     throw new ApiError(400, "Title, Description, Date and Venue are required");
   }
 
